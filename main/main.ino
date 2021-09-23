@@ -42,8 +42,31 @@ void tonoRechazar(){
     noTone(buzzer);
   }
 }
-
+int ledAprobado = 2;
+int letRechazado = 4;
+int tiempoEspera = 1000;
+void ledSetup(){
+  pinMode(ledAprobado, OUTPUT);
+  pinMode(letRechazado, OUTPUT);
+}
+void onLedAprobar(){
+  digitalWrite(ledAprobado, HIGH);  
+  delay(tiempoEspera);  
+}
+void offLedAprobar(){  
+  digitalWrite(ledAprobado, LOW);  
+  delay(tiempoEspera);
+}
+void onLedRechazar(){
+  digitalWrite(letRechazado, HIGH);  
+  delay(tiempoEspera);
+}
+void offLedRechazar(){
+  digitalWrite(letRechazado, LOW);  
+  delay(tiempoEspera); 
+}
 void setup() {
+  ledSetup();
   Serial.begin(9600);		// Initialize serial communications with the PC
   while (!Serial);		// Do nothing if no serial port is opened (added for Arduinos based on ATMEGA32U4)
   SPI.begin();			// Init SPI bus
@@ -55,8 +78,12 @@ void setup() {
 
 void loop() {
   if ( !isNewCardAvailable() ) {
+    onLedAprobar();
     tonoAprobar();
+    offLedAprobar();
+    onLedRechazar();
     tonoRechazar();
+    offLedRechazar();
     return;
   }
 
