@@ -2,10 +2,11 @@
 #include <MFRC522.h>
 #include "pitches.h" 
 
+#define LED_GREEN 2
+#define LED_RED 4
 #define BUZZER 5
 #define RST_PIN 9
 #define SS_PIN  10
-
 #define REST 0
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
@@ -22,6 +23,7 @@ void tonoAprobar(){
     noTone(BUZZER);
   }
 }
+
 int divider = 0, noteDuration = 0;
 void tonoRechazar(){ 
   int tempo = 120; 
@@ -44,29 +46,34 @@ void tonoRechazar(){
     noTone(BUZZER);
   }
 }
-int ledAprobado = 2;
-int letRechazado = 4;
+
 int tiempoEspera = 1000;
+
 void ledSetup(){
-  pinMode(ledAprobado, OUTPUT);
-  pinMode(letRechazado, OUTPUT);
+  pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
 }
+
 void onLedAprobar(){
-  digitalWrite(ledAprobado, HIGH);  
+  digitalWrite(LED_GREEN, HIGH);  
   delay(tiempoEspera);  
 }
+
 void offLedAprobar(){  
-  digitalWrite(ledAprobado, LOW);  
+  digitalWrite(LED_GREEN, LOW);  
   delay(tiempoEspera);
 }
+
 void onLedRechazar(){
-  digitalWrite(letRechazado, HIGH);  
+  digitalWrite(LED_RED, HIGH);  
   delay(tiempoEspera);
 }
+
 void offLedRechazar(){
-  digitalWrite(letRechazado, LOW);  
+  digitalWrite(LED_RED, LOW);  
   delay(tiempoEspera); 
 }
+
 void setup() {
   ledSetup();
   Serial.begin(9600);
