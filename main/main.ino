@@ -1,23 +1,25 @@
 #include <SPI.h>
 #include <MFRC522.h>
+#include "pitches.h" 
 
+#define BUZZER 5
 #define RST_PIN 9
 #define SS_PIN  10
 
+#define REST 0
+
 MFRC522 mfrc522(SS_PIN, RST_PIN);
-#include "pitches.h" 
-#define REST      0 
-int buzzer = 5; 
+ 
 void tonoAprobar(){
   int melody[] = { NOTE_FS5, NOTE_FS5, NOTE_D5, NOTE_B4, NOTE_B4, NOTE_E5 }; 
   int durations[] = { 8, 8, 8, 4, 4, 4};
   int songLength = sizeof(melody)/sizeof(melody[0]);
   for (int thisNote = 0; thisNote < songLength; thisNote++){
     int duration = 1000/ durations[thisNote];
-    tone(buzzer, melody[thisNote], duration);
+    tone(BUZZER, melody[thisNote], duration);
     int pause = duration * 1.3;
     delay(pause);
-    noTone(buzzer);
+    noTone(BUZZER);
   }
 }
 int divider = 0, noteDuration = 0;
@@ -37,9 +39,9 @@ void tonoRechazar(){
       noteDuration = (wholenote) / abs(divider);
       noteDuration *= 1.5; // increases the duration in half for dotted notes
     } 
-    tone(buzzer, melody[thisNote], noteDuration*0.9); 
+    tone(BUZZER, melody[thisNote], noteDuration*0.9); 
     delay(noteDuration); 
-    noTone(buzzer);
+    noTone(BUZZER);
   }
 }
 int ledAprobado = 2;
