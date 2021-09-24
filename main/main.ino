@@ -12,14 +12,9 @@
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 void setup() {
-  ledSetup();
   Serial.begin(9600);
-  while (!Serial);
-  SPI.begin();
-  mfrc522.PCD_Init();
-  delay(4);
-  mfrc522.PCD_DumpVersionToSerial();
-  Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
+  ledSetup();
+  rfidSetup();
 }
 
 void loop() {
@@ -81,6 +76,15 @@ int tiempoEspera = 1000;
 void ledSetup(){
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_RED, OUTPUT);
+}
+
+void rfidSetup() {
+  while (!Serial);
+  SPI.begin();
+  mfrc522.PCD_Init();
+  delay(4);
+  mfrc522.PCD_DumpVersionToSerial();
+  Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
 }
 
 void onLedAprobar(){
