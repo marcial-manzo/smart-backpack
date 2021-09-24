@@ -10,7 +10,32 @@
 #define REST 0
 
 MFRC522 mfrc522(SS_PIN, RST_PIN);
- 
+
+void setup() {
+  ledSetup();
+  Serial.begin(9600);
+  while (!Serial);
+  SPI.begin();
+  mfrc522.PCD_Init();
+  delay(4);
+  mfrc522.PCD_DumpVersionToSerial();
+  Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
+}
+
+void loop() {
+  if ( !isNewCardAvailable() ) {
+    onLedAprobar();
+    tonoAprobar();
+    offLedAprobar();
+    onLedRechazar();
+    tonoRechazar();
+    offLedRechazar();
+    return;
+  }
+
+  String uid = readUID();
+}
+
 void tonoAprobar(){
   int melody[] = { NOTE_FS5, NOTE_FS5, NOTE_D5, NOTE_B4, NOTE_B4, NOTE_E5 }; 
   int durations[] = { 8, 8, 8, 4, 4, 4};
@@ -72,31 +97,6 @@ void onLedRechazar(){
 void offLedRechazar(){
   digitalWrite(LED_RED, LOW);  
   delay(tiempoEspera); 
-}
-
-void setup() {
-  ledSetup();
-  Serial.begin(9600);
-  while (!Serial);
-  SPI.begin();
-  mfrc522.PCD_Init();
-  delay(4);
-  mfrc522.PCD_DumpVersionToSerial();
-  Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
-}
-
-void loop() {
-  if ( !isNewCardAvailable() ) {
-    onLedAprobar();
-    tonoAprobar();
-    offLedAprobar();
-    onLedRechazar();
-    tonoRechazar();
-    offLedRechazar();
-    return;
-  }
-
-  String uid = readUID();
 }
 
 bool isNewCardAvailable() {
