@@ -24,16 +24,20 @@ void setup() {
 
 void loop() {
   if ( !isNewCardAvailable() ) {
-    onLedAprobar();
-    tonoAprobar();
-    offLedAprobar();
-    onLedRechazar();
-    tonoRechazar();
-    offLedRechazar();
     return;
   }
 
   String uid = readUID();
+  if (isValidUid(uid)) {
+    onLedAprobar();
+    tonoAprobar();
+    offLedAprobar();
+  } else {
+    onLedRechazar();
+    tonoRechazar();
+    offLedRechazar();
+  }
+
 }
 
 void tonoAprobar(){
@@ -110,7 +114,7 @@ bool isNewCardAvailable() {
     return false;
   }
 
-  return false;
+  return true;
 }
 
 String readUID() {
@@ -128,4 +132,17 @@ String readUID() {
   Serial.println(uid);
 
   return uid;
+}
+
+bool isValidUid(String uid) {
+  byte keys_size = 2; 
+  const char* keys[] = {"E3C3B979", "F0EE4BA8"};
+  
+  for (byte i = 0; i < keys_size; i++) {
+    const char* key = keys[i];
+    if (uid.compareTo(key) == 0) {
+      return true;
+    }
+  }
+  return false;
 }
