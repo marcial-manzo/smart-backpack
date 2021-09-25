@@ -1,5 +1,5 @@
 #include <SPI.h>
-#include <MFRC522.h>
+//++#include <MFRC522.h>
 #include "pitches.h" 
 
 #define LED_GREEN 2
@@ -7,16 +7,17 @@
 #define BUZZER 5
 #define RST_PIN 9
 #define SS_PIN  10
+#define MOTOR_PIN  3
 #define REST 0
 
-MFRC522 mfrc522(SS_PIN, RST_PIN);
+//++MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 void setup() {
-  Serial.begin(9600);
+  //++Serial.begin(9600);
   ledSetup();
-  rfidSetup();
+  //++rfidSetup();
 }
-
+bool ok = true;
 void loop() {
   if ( !isNewCardAvailable() ) {
     return;
@@ -25,36 +26,40 @@ void loop() {
   String uid = readUID();
   if (isValidUid(uid)) {
     onLedAprobar();
-    tonoAprobar();
+    aprobarReact();
     offLedAprobar();
-  } else {
+  } else if(ok) {
     onLedRechazar();
-    tonoRechazar();
+    rechazarReact();
     offLedRechazar();
+   ok = false;
   }
 
 }
 
-void react(int melody[], int durations[], size_t songLength) {
+void react(int melody[], int durations[], size_t songLength, int vibrationLevel[]) {
   for (int thisNote = 0; thisNote < songLength; thisNote++){
     int duration = 1000/ durations[thisNote];
     tone(BUZZER, melody[thisNote], duration);
+    analogWrite(MOTOR_PIN,vibrationLevel[thisNote]);
     int pause = duration * 1.3;
     delay(pause);
     noTone(BUZZER);
   }
 }
 
-void tonoAprobar(){
+void aprobarReact(){
   int melody[] = { NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5 }; 
   int durations[] = { 8, 8, 8, 1};
-  react(melody, durations, sizeof(melody)/sizeof(int));
+  int vibrationLevel[] = {10,100,150,0};
+  react(melody, durations, sizeof(melody)/sizeof(int),vibrationLevel);
 }
 
-void tonoRechazar(){ 
+void rechazarReact(){ 
   int melody[] = { NOTE_F3, NOTE_E3, NOTE_F3, NOTE_C3 }; 
   int durations[] = { 8, 8, 8, 1};
-  react(melody, durations, sizeof(melody)/sizeof(int));
+  int vibrationLevel[] = {50,100,255,0};
+  react(melody, durations, sizeof(melody)/sizeof(int),vibrationLevel);
 }
 
 int tiempoEspera = 1000;
@@ -63,7 +68,7 @@ void ledSetup(){
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_RED, OUTPUT);
 }
-
+/*++
 void rfidSetup() {
   while (!Serial);
   SPI.begin();
@@ -72,6 +77,7 @@ void rfidSetup() {
   mfrc522.PCD_DumpVersionToSerial();
   Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
 }
+*/
 
 void onLedAprobar(){
   digitalWrite(LED_GREEN, HIGH);  
@@ -95,20 +101,20 @@ void offLedRechazar(){
 
 bool isNewCardAvailable() {
   // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
-  if ( ! mfrc522.PICC_IsNewCardPresent()) {
+ /*++ if ( ! mfrc522.PICC_IsNewCardPresent()) {
     return false;
   }
 
   // Select one of the cards
   if ( ! mfrc522.PICC_ReadCardSerial()) {
     return false;
-  }
+  }*/
 
   return true;
 }
 
 String readUID() {
-  String uid = "";
+  /*++String uid = "";
 
   for (byte i = 0; i < mfrc522.uid.size; i++)
   {
@@ -121,7 +127,8 @@ String readUID() {
   Serial.print(F("uid: "));
   Serial.println(uid);
 
-  return uid;
+  return uid;*/
+  return "E3C3B979xx";
 }
 
 bool isValidUid(String uid) {
