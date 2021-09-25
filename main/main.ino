@@ -36,8 +36,8 @@ void loop() {
 }
 
 void tonoAprobar(){
-  int melody[] = { NOTE_FS5, NOTE_FS5, NOTE_D5, NOTE_B4, NOTE_B4, NOTE_E5 }; 
-  int durations[] = { 8, 8, 8, 4, 4, 4};
+  int melody[] = { NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5 }; 
+  int durations[] = { 8, 8, 8, 1};
   int songLength = sizeof(melody)/sizeof(melody[0]);
   for (int thisNote = 0; thisNote < songLength; thisNote++){
     int duration = 1000/ durations[thisNote];
@@ -48,25 +48,15 @@ void tonoAprobar(){
   }
 }
 
-int divider = 0, noteDuration = 0;
 void tonoRechazar(){ 
-  int tempo = 120; 
-
-  int melody[] = {
-   NOTE_A4,4, NOTE_F4,-8, NOTE_C5,16, NOTE_A4,2
-  }; 
-  int notes = sizeof(melody) / sizeof(melody[0]) / 2; 
-  int wholenote = (60000 * 4) / tempo;
-  for (int thisNote = 0; thisNote < notes * 2; thisNote = thisNote + 2) { 
-    divider = melody[thisNote + 1];
-    if (divider > 0) { 
-      noteDuration = (wholenote) / divider;
-    } else if (divider < 0) { 
-      noteDuration = (wholenote) / abs(divider);
-      noteDuration *= 1.5; // increases the duration in half for dotted notes
-    } 
-    tone(BUZZER, melody[thisNote], noteDuration*0.9); 
-    delay(noteDuration); 
+  int melody[] = { NOTE_F3, NOTE_E3, NOTE_F3, NOTE_C3 }; 
+  int durations[] = { 8, 8, 8, 1};
+  int songLength = sizeof(melody)/sizeof(melody[0]);
+  for (int thisNote = 0; thisNote < songLength; thisNote++){
+    int duration = 1000/ durations[thisNote];
+    tone(BUZZER, melody[thisNote], duration);
+    int pause = duration * 1.3;
+    delay(pause);
     noTone(BUZZER);
   }
 }
