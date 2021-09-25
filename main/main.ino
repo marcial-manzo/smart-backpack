@@ -1,5 +1,5 @@
 #include <SPI.h>
-//++#include <MFRC522.h>
+#include <MFRC522.h>
 #include "pitches.h" 
 
 #define LED_GREEN 2
@@ -10,14 +10,13 @@
 #define MOTOR_PIN  3
 #define REST 0
 
-//++MFRC522 mfrc522(SS_PIN, RST_PIN);
+MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 void setup() {
-  //++Serial.begin(9600);
+  Serial.begin(9600);
   ledSetup();
-  //++rfidSetup();
+  rfidSetup();
 }
-bool ok = true;
 void loop() {
   if ( !isNewCardAvailable() ) {
     return;
@@ -28,11 +27,10 @@ void loop() {
     onLedAprobar();
     aprobarReact();
     offLedAprobar();
-  } else if(ok) {
+  } else {
     onLedRechazar();
     rechazarReact();
-    offLedRechazar();
-   ok = false;
+    offLedRechazar(); 
   }
 
 }
@@ -68,7 +66,7 @@ void ledSetup(){
   pinMode(LED_GREEN, OUTPUT);
   pinMode(LED_RED, OUTPUT);
 }
-/*++
+
 void rfidSetup() {
   while (!Serial);
   SPI.begin();
@@ -77,7 +75,7 @@ void rfidSetup() {
   mfrc522.PCD_DumpVersionToSerial();
   Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
 }
-*/
+
 
 void onLedAprobar(){
   digitalWrite(LED_GREEN, HIGH);  
@@ -101,20 +99,20 @@ void offLedRechazar(){
 
 bool isNewCardAvailable() {
   // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
- /*++ if ( ! mfrc522.PICC_IsNewCardPresent()) {
+if ( ! mfrc522.PICC_IsNewCardPresent()) {
     return false;
   }
 
   // Select one of the cards
   if ( ! mfrc522.PICC_ReadCardSerial()) {
     return false;
-  }*/
+  }
 
   return true;
 }
 
 String readUID() {
-  /*++String uid = "";
+  ++String uid = "";
 
   for (byte i = 0; i < mfrc522.uid.size; i++)
   {
@@ -126,9 +124,7 @@ String readUID() {
 
   Serial.print(F("uid: "));
   Serial.println(uid);
-
-  return uid;*/
-  return "E3C3B979xx";
+  return uid;
 }
 
 bool isValidUid(String uid) {
