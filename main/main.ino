@@ -17,6 +17,7 @@ void setup() {
   ledSetup();
   rfidSetup();
 }
+
 void loop() {
   if ( !isNewCardAvailable() ) {
     return;
@@ -66,13 +67,7 @@ void rechazarReact(){
   react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
 }
 
-int tiempoEspera = 1000;
-
-void ledSetup(){
-  pinMode(LED_GREEN, OUTPUT);
-  pinMode(LED_RED, OUTPUT);
-}
-
+// rfid
 void rfidSetup() {
   while (!Serial);
   SPI.begin();
@@ -80,27 +75,6 @@ void rfidSetup() {
   delay(4);
   mfrc522.PCD_DumpVersionToSerial();
   Serial.println(F("Scan PICC to see UID, SAK, type, and data blocks..."));
-}
-
-
-void onLedAprobar(){
-  digitalWrite(LED_GREEN, HIGH);  
-  delay(tiempoEspera);  
-}
-
-void offLedAprobar(){  
-  digitalWrite(LED_GREEN, LOW);  
-  delay(tiempoEspera);
-}
-
-void onLedRechazar(){
-  digitalWrite(LED_RED, HIGH);  
-  delay(tiempoEspera);
-}
-
-void offLedRechazar(){
-  digitalWrite(LED_RED, LOW);  
-  delay(tiempoEspera); 
 }
 
 bool isNewCardAvailable() {
@@ -142,4 +116,32 @@ bool isValidUid(String uid) {
     }
   }
   return false;
+}
+
+// led matrix
+int tiempoEspera = 1000;
+
+void ledSetup(){
+  pinMode(LED_GREEN, OUTPUT);
+  pinMode(LED_RED, OUTPUT);
+}
+
+void onLedAprobar(){
+  digitalWrite(LED_GREEN, HIGH);  
+  delay(tiempoEspera);  
+}
+
+void offLedAprobar(){  
+  digitalWrite(LED_GREEN, LOW);  
+  delay(tiempoEspera);
+}
+
+void onLedRechazar(){
+  digitalWrite(LED_RED, HIGH);  
+  delay(tiempoEspera);
+}
+
+void offLedRechazar(){
+  digitalWrite(LED_RED, LOW);  
+  delay(tiempoEspera); 
 }
