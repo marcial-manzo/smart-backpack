@@ -1,20 +1,33 @@
-#include <SPI.h>
+#include <FastLED.h>
 #include <MFRC522.h>
+#include <SPI.h>
 #include "pitches.h" 
 
-#define LED_GREEN 2
-#define LED_RED 4
+// led matrix
+#define LED_PIN  6
+#define COLOR_ORDER GRB
+#define CHIPSET WS2812
+#define BRIGHTNESS 16
+#define MATRIX_WIDTH 8
+#define MATRIX_HEIGHT 8
+#define NUM_LEDS (MATRIX_WIDTH * MATRIX_HEIGHT)
+
+// vibration
+#define MOTOR_PIN  3
+
+// buzzer
 #define BUZZER 5
+
+// rfid
 #define RST_PIN 9
 #define SS_PIN  10
-#define MOTOR_PIN  3
-#define REST 0
 
+CRGB leds[ NUM_LEDS ];
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
 void setup() {
   Serial.begin(9600);
-  ledSetup();
+  ledMatrixSetup();
   rfidSetup();
 }
 
@@ -25,13 +38,13 @@ void loop() {
 
   String uid = readUID();
   if (isValidUid(uid)) {
-    onLedAprobar();
+    drawHappyFace();
     aprobarReact();
-    offLedAprobar();
+    resetMatrix();
   } else {
-    onLedRechazar();
+    drawSadFace();
     rechazarReact();
-    offLedRechazar(); 
+    resetMatrix(); 
   }
 
 }
@@ -56,14 +69,14 @@ void react(
 void aprobarReact(){
   int melody[] = { NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5 }; 
   int durations[] = { 8, 8, 8, 1};
-  int vibrationLevel[] = {124, 255, 124, 255};
+  int vibrationLevel[] = {255, 0, 0, 255};
   react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
 }
 
 void rechazarReact(){ 
   int melody[] = { NOTE_F3, NOTE_E3, NOTE_F3, NOTE_C3 }; 
   int durations[] = { 8, 8, 8, 1};
-  int vibrationLevel[] = {124, 255, 255, 255};
+  int vibrationLevel[] = {124, 255, 255, 124};
   react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
 }
 
@@ -121,27 +134,40 @@ bool isValidUid(String uid) {
 // led matrix
 int tiempoEspera = 1000;
 
-void ledSetup(){
-  pinMode(LED_GREEN, OUTPUT);
-  pinMode(LED_RED, OUTPUT);
+void ledMatrixSetup(){
+  FastLED.addLeds<CHIPSET, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS).setCorrection(TypicalSMD5050);
+  FastLED.setBrightness( BRIGHTNESS );
+  resetMatrix(); 
 }
 
-void onLedAprobar(){
-  digitalWrite(LED_GREEN, HIGH);  
-  delay(tiempoEspera);  
+uint16_t XY( uint8_t x, uint8_t y) {
+  return (y * MATRIX_WIDTH) + x;
 }
 
-void offLedAprobar(){  
-  digitalWrite(LED_GREEN, LOW);  
-  delay(tiempoEspera);
+void displayImage(uint64_t image, uint8_t h, uint8_t s, uint8_t v) {
+  for (int i = 0; i < 8; i++) {
+    byte row = (image >> i * 8) & 0xFF;
+    for (int j = 0; j < 8; j++) {
+      if (bitRead(row, j) == 1) {
+        leds[ XY(i, j)]  = CHSV(h, s, v);
+      }
+    }
+  }
+  FastLED.show();
 }
 
-void onLedRechazar(){
-  digitalWrite(LED_RED, HIGH);  
-  delay(tiempoEspera);
+void resetMatrix() {
+    displayImage(0xffffffffffffffff, 0, 0, 0);
 }
 
-void offLedRechazar(){
-  digitalWrite(LED_RED, LOW);  
-  delay(tiempoEspera); 
+void drawHappyFace() {
+    displayImage(0x003c420000666600, HSVHue::HUE_GREEN, 240, 240);
+}
+
+void drawSadFace() {
+    displayImage(0x00423c0000666600, HSVHue::HUE_RED, 240, 240);
+}
+
+void drawHeart() {
+    displayImage(0x183c7effffff6600, HSVHue::HUE_PINK, 240, 240);
 }
