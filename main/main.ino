@@ -35,29 +35,35 @@ void loop() {
 
 }
 
-void react(int melody[], int durations[], size_t songLength, int vibrationLevel[]) {
+void react(
+  int melody[], 
+  int durations[], 
+  size_t songLength, 
+  int vibrationLevel[]) {
+  
   for (int thisNote = 0; thisNote < songLength; thisNote++){
     int duration = 1000/ durations[thisNote];
     tone(BUZZER, melody[thisNote], duration);
-    analogWrite(MOTOR_PIN,vibrationLevel[thisNote]);
+    analogWrite(MOTOR_PIN, vibrationLevel[thisNote]);
     int pause = duration * 1.3;
     delay(pause);
     noTone(BUZZER);
   }
+  analogWrite(MOTOR_PIN, 0);
 }
 
 void aprobarReact(){
   int melody[] = { NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5 }; 
   int durations[] = { 8, 8, 8, 1};
-  int vibrationLevel[] = {10,100,150,0};
-  react(melody, durations, sizeof(melody)/sizeof(int),vibrationLevel);
+  int vibrationLevel[] = {124, 255, 124, 255};
+  react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
 }
 
 void rechazarReact(){ 
   int melody[] = { NOTE_F3, NOTE_E3, NOTE_F3, NOTE_C3 }; 
   int durations[] = { 8, 8, 8, 1};
-  int vibrationLevel[] = {50,100,255,0};
-  react(melody, durations, sizeof(melody)/sizeof(int),vibrationLevel);
+  int vibrationLevel[] = {124, 255, 255, 255};
+  react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
 }
 
 int tiempoEspera = 1000;
@@ -98,12 +104,10 @@ void offLedRechazar(){
 }
 
 bool isNewCardAvailable() {
-  // Reset the loop if no new card present on the sensor/reader. This saves the entire process when idle.
-if ( ! mfrc522.PICC_IsNewCardPresent()) {
+  if ( ! mfrc522.PICC_IsNewCardPresent()) {
     return false;
   }
 
-  // Select one of the cards
   if ( ! mfrc522.PICC_ReadCardSerial()) {
     return false;
   }
@@ -112,7 +116,7 @@ if ( ! mfrc522.PICC_IsNewCardPresent()) {
 }
 
 String readUID() {
-  ++String uid = "";
+  String uid = "";
 
   for (byte i = 0; i < mfrc522.uid.size; i++)
   {
