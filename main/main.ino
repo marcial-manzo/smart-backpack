@@ -35,10 +35,7 @@ void loop() {
 
 }
 
-void tonoAprobar(){
-  int melody[] = { NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5 }; 
-  int durations[] = { 8, 8, 8, 1};
-  int songLength = sizeof(melody)/sizeof(melody[0]);
+void react(int melody[], int durations[], size_t songLength) {
   for (int thisNote = 0; thisNote < songLength; thisNote++){
     int duration = 1000/ durations[thisNote];
     tone(BUZZER, melody[thisNote], duration);
@@ -48,17 +45,16 @@ void tonoAprobar(){
   }
 }
 
+void tonoAprobar(){
+  int melody[] = { NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5 }; 
+  int durations[] = { 8, 8, 8, 1};
+  react(melody, durations, sizeof(melody)/sizeof(int));
+}
+
 void tonoRechazar(){ 
   int melody[] = { NOTE_F3, NOTE_E3, NOTE_F3, NOTE_C3 }; 
   int durations[] = { 8, 8, 8, 1};
-  int songLength = sizeof(melody)/sizeof(melody[0]);
-  for (int thisNote = 0; thisNote < songLength; thisNote++){
-    int duration = 1000/ durations[thisNote];
-    tone(BUZZER, melody[thisNote], duration);
-    int pause = duration * 1.3;
-    delay(pause);
-    noTone(BUZZER);
-  }
+  react(melody, durations, sizeof(melody)/sizeof(int));
 }
 
 int tiempoEspera = 1000;
