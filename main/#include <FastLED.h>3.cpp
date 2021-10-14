@@ -25,8 +25,6 @@
 CRGB leds[ NUM_LEDS ];
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
-uint8_t bonusCount = 0; 
-
 void setup() {
   Serial.begin(9600);
   ledMatrixSetup();
@@ -40,11 +38,15 @@ void loop() {
 
   String uid = readUID();
   if (isValidUid(uid)) {
-    aprobarReact();
-    bonusFeedback();
+    drawFive();
+    //drawHappyFace();
+    //aprobarReact();
+    //resetMatrix();
   } else {
-    rechazarReact();
-    bonusCount = 0; 
+    drawHeart();
+    //drawSadFace();
+    //rechazarReact();
+    //resetMatrix(); 
   }
 
 }
@@ -67,34 +69,17 @@ void react(
 }
 
 void aprobarReact(){
-  drawHappyFace();
   int melody[] = { NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5 }; 
   int durations[] = { 8, 8, 8, 1};
   int vibrationLevel[] = {255, 0, 0, 255};
   react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
-  resetMatrix();
-}
-
-void bonusFeedback() {
-  bonusCount++;
-  if (bonusCount == 3) {
-    drawHeart();
-  } else if (bonusCount == 5) {
-    drawFive();
-  }
-
-  if (bonusCount > 254) {
-    bonusCount = 254; // avoids overflow
-  }
 }
 
 void rechazarReact(){ 
-  drawSadFace();
   int melody[] = { NOTE_F3, NOTE_E3, NOTE_F3, NOTE_C3 }; 
   int durations[] = { 8, 8, 8, 1};
   int vibrationLevel[] = {124, 255, 255, 124};
   react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
-  resetMatrix();
 }
 
 // rfid
@@ -161,7 +146,7 @@ uint16_t XY( uint8_t x, uint8_t y) {
   return (y * MATRIX_WIDTH) + x;
 }
 
-void displayImage(uint64_t image, CHSV (*color)(int, int)) {
+void displayImage(uint64_t image, std::function<CHSV(int, int)>) {
   for (int i = 0; i < 8; i++) {
     byte row = (image >> i * 8) & 0xFF;
     for (int j = 0; j < 8; j++) {
@@ -171,19 +156,6 @@ void displayImage(uint64_t image, CHSV (*color)(int, int)) {
     }
   }
   FastLED.show();
-}
-
-void drawImages(
-  const uint64_t images[], 
-  int imagesSize, 
-  int delayedBy,
-  CHSV (*color)(int, int)) {
-  
-  for (int i = 0; i < imagesSize; i++){
-    displayImage(images[i], color);
-    delay(delayedBy);
-    resetMatrix();
-  }
 }
 
 CHSV hueBlack(int i, int j) {
@@ -214,21 +186,25 @@ void drawSadFace() {
     displayImage(0x00423c0000666600, hueRed);
 }
 
+void drawImages(
+  const uint64_t images[], 
+  int imagesSize, 
+  int delayedBy,
+  CHSV (*color)(int, int)) {
+  
+  for (int i = 0; i < imagesSize; i++){
+    displayImage(images[i], color);
+    delay(delayedBy);
+    resetMatrix();
+  }
+}
+
 void drawHeart() {
   const uint64_t images[] = {
     0x183c7effffff6600,
     0x0038040418043c00
   };
-  drawImages(images, sizeof(images)/8, 350, huePink);
-}
-
-CHSV hueRainbow(int i, int j) {
-  const uint32_t ms = millis();
-  const int32_t xHueDelta32 = ((int32_t)cos16( ms * (39/1) ) * (310 / MATRIX_HEIGHT));
-  const int32_t yHueDelta32 = ((int32_t)cos16( ms * (27/1) ) * (350 / MATRIX_WIDTH));
-
-  const uint8_t pixelHue = xHueDelta32 * i + yHueDelta32 * j;
-  return CHSV(pixelHue, 255, 255);
+  drawImages(images, sizeof(images)/8, 500, huePink);
 }
 
 void drawFive() {
@@ -244,5 +220,14 @@ void drawFive() {
     0x0038040418203c00
   };
 
-  drawImages(images, sizeof(images)/8, 175, hueRainbow);
+  const uint32_t ms = millis();
+  int32_t xHueDelta32 = ((int32_t)cos16( ms * (39/1) ) * (310 / MATRIX_HEIGHT));
+  int32_t yHueDelta32 = ((int32_t)cos16( ms * (27/1) ) * (350 / MATRIX_WIDTH));
+  
+  drawImages(images, sizeof(images)/8, 200, 
+    [xHueDelta32, yHueDelta32](int i, int j) -> CHSV {
+      uint8_t pixelHue = xHueDelta32 * i + yHueDelta32 * j;
+      return CHSV(pixelHue, 255, 255);
+    }
+  );
 }

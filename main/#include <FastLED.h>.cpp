@@ -25,8 +25,6 @@
 CRGB leds[ NUM_LEDS ];
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
-uint8_t bonusCount = 0; 
-
 void setup() {
   Serial.begin(9600);
   ledMatrixSetup();
@@ -40,11 +38,13 @@ void loop() {
 
   String uid = readUID();
   if (isValidUid(uid)) {
+    drawHappyFace();
     aprobarReact();
-    bonusFeedback();
+    resetMatrix();
   } else {
+    drawSadFace();
     rechazarReact();
-    bonusCount = 0; 
+    resetMatrix(); 
   }
 
 }
@@ -67,34 +67,17 @@ void react(
 }
 
 void aprobarReact(){
-  drawHappyFace();
   int melody[] = { NOTE_C4, NOTE_E4, NOTE_G4, NOTE_C5 }; 
   int durations[] = { 8, 8, 8, 1};
   int vibrationLevel[] = {255, 0, 0, 255};
   react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
-  resetMatrix();
-}
-
-void bonusFeedback() {
-  bonusCount++;
-  if (bonusCount == 3) {
-    drawHeart();
-  } else if (bonusCount == 5) {
-    drawFive();
-  }
-
-  if (bonusCount > 254) {
-    bonusCount = 254; // avoids overflow
-  }
 }
 
 void rechazarReact(){ 
-  drawSadFace();
   int melody[] = { NOTE_F3, NOTE_E3, NOTE_F3, NOTE_C3 }; 
   int durations[] = { 8, 8, 8, 1};
   int vibrationLevel[] = {124, 255, 255, 124};
   react(melody, durations, sizeof(melody)/sizeof(int), vibrationLevel);
-  resetMatrix();
 }
 
 // rfid
@@ -161,57 +144,43 @@ uint16_t XY( uint8_t x, uint8_t y) {
   return (y * MATRIX_WIDTH) + x;
 }
 
-void displayImage(uint64_t image, CHSV (*color)(int, int)) {
+void displayImage(uint64_t image, uint8_t h, uint8_t s, uint8_t v) {
   for (int i = 0; i < 8; i++) {
     byte row = (image >> i * 8) & 0xFF;
     for (int j = 0; j < 8; j++) {
       if (bitRead(row, j) == 1) {
-        leds[ XY(i, j)]  = color(i, j);
+        leds[ XY(i, j)]  = CHSV(h, s, v);
       }
     }
   }
   FastLED.show();
 }
 
+void resetMatrix() {
+    displayImage(0xffffffffffffffff, 0, 0, 0);
+}
+
+void drawHappyFace() {
+    displayImage(0x003c420000666600, HSVHue::HUE_GREEN, 240, 240);
+}
+
+void drawSadFace() {
+    displayImage(0x00423c0000666600, HSVHue::HUE_RED, 240, 240);
+}
+
 void drawImages(
   const uint64_t images[], 
   int imagesSize, 
   int delayedBy,
-  CHSV (*color)(int, int)) {
+  uint8_t h, 
+  uint8_t s, 
+  uint8_t v) {
   
   for (int i = 0; i < imagesSize; i++){
-    displayImage(images[i], color);
+    displayImage(images[i], h, s , v);
     delay(delayedBy);
     resetMatrix();
   }
-}
-
-CHSV hueBlack(int i, int j) {
-  return CHSV(0, 0, 0);
-}
-
-CHSV hueGreen(int i, int j) {
-  return CHSV(HSVHue::HUE_GREEN, 255, 255);
-}
-
-CHSV hueRed(int i, int j) {
-  return CHSV(HSVHue::HUE_RED, 255, 255);
-}
-
-CHSV huePink(int i, int j) {
-  return CHSV(HSVHue::HUE_PINK, 255, 255);
-}
-
-void resetMatrix() {
-    displayImage(0xffffffffffffffff, hueBlack);
-}
-
-void drawHappyFace() {
-    displayImage(0x003c420000666600, hueGreen);
-}
-
-void drawSadFace() {
-    displayImage(0x00423c0000666600, hueRed);
 }
 
 void drawHeart() {
@@ -219,16 +188,7 @@ void drawHeart() {
     0x183c7effffff6600,
     0x0038040418043c00
   };
-  drawImages(images, sizeof(images)/8, 350, huePink);
-}
-
-CHSV hueRainbow(int i, int j) {
-  const uint32_t ms = millis();
-  const int32_t xHueDelta32 = ((int32_t)cos16( ms * (39/1) ) * (310 / MATRIX_HEIGHT));
-  const int32_t yHueDelta32 = ((int32_t)cos16( ms * (27/1) ) * (350 / MATRIX_WIDTH));
-
-  const uint8_t pixelHue = xHueDelta32 * i + yHueDelta32 * j;
-  return CHSV(pixelHue, 255, 255);
+  drawImages(images, sizeof(images)/8, 200, HSVHue::HUE_PINK, 240, 240);
 }
 
 void drawFive() {
@@ -243,6 +203,32 @@ void drawFive() {
     0x0139050519213d01,
     0x0038040418203c00
   };
+  drawImages(images, sizeof(images)/8, 200, HSVHue::HUE_PINK, 240, 240);
+}
 
-  drawImages(images, sizeof(images)/8, 175, hueRainbow);
+void drawImages2(
+  const uint64_t images[], 
+  int imagesSize, 
+  int delayedBy,
+  HSVHue (*f)(int, int)) {
+  
+  for (int i = 0; i < imagesSize; i++){
+    displayImage(images[i], h, s , v);
+    delay(delayedBy);
+    resetMatrix();
+  }
+}
+
+void displayImage2(
+  uint64_t image, 
+  HSVHue (*f)(int, int)) {
+  for (int i = 0; i < 8; i++) {
+    byte row = (image >> i * 8) & 0xFF;
+    for (int j = 0; j < 8; j++) {
+      if (bitRead(row, j) == 1) {
+        leds[ XY(i, j)]  = f(i, j);
+      }
+    }
+  }
+  FastLED.show();
 }
